@@ -29,6 +29,7 @@ import {
   WarningOutlined,
   CheckCircleOutlined,
   StopOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { usePharmacyStore } from '../../stores/usePharmacyStore';
@@ -52,6 +53,7 @@ const DrugInventoryPage = () => {
     fetchInventory,
     fetchAlerts,
     restockDrug,
+    batchRestock,
     createDrug,
     updateDrug,
     deleteDrug,
@@ -63,6 +65,9 @@ const DrugInventoryPage = () => {
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [restockModalVisible, setRestockModalVisible] = useState(false);
+  const [batchModalVisible, setBatchModalVisible] = useState(false);
+  const [batchList, setBatchList] = useState([]);
+  const [selectedAddDrugCode, setSelectedAddDrugCode] = useState(null);
   const [priceModalVisible, setPriceModalVisible] = useState(false);
   const [selectedDrug, setSelectedDrug] = useState(null);
 
@@ -160,6 +165,99 @@ const DrugInventoryPage = () => {
       await restockDrug(values.maThuoc, values.soLuongNhap);
       setRestockModalVisible(false);
       setSelectedDrug(null);
+    } catch {
+      // Handled in store
+    }
+  };
+
+  // Mở Modal Nhập Nhiều Thuốc (Transaction Demo)
+  const handleOpenBatchRestock = () => {
+    const sampleItems = (drugPage.items || []).slice(0, 2).map((d) => ({
+      maThuoc: d.maThuoc,
+      tenThuoc: d.tenThuoc,
+      donViTinh: d.donViTinh,
+      soLuongTon: d.soLuongTon,
+      soLuong: 50,
+    }));
+    setBatchList(sampleItems);
+    setSelectedAddDrugCode(null);
+    setBatchModalVisible(true);
+  };
+
+  const handleAddDrugToBatch = (maThuoc) => {
+    if (!maThuoc) return;
+    const exists = batchList.some((b) => b.maThuoc === maThuoc);
+    if (exists) return;
+    const drug = (drugPage.items || []).find((d) => d.maThuoc === maThuoc);
+    if (drug) {
+      setBatchList([
+        ...batchList,
+        {
+          maThuoc: drug.maThuoc,
+          tenThuoc: drug.tenThuoc,
+          donViTinh: drug.donViTinh,
+          soLuongTon: drug.soLuongTon,
+          soLuong: 30,
+        },
+      ]);
+    }
+    setSelectedAddDrugCode(null);
+  };
+
+  const handleRemoveBatchItem = (index) => {
+    const next = [...batchList];
+    next.splice(index, 1);
+    setBatchList(next);
+  };
+
+  const handleUpdateBatchQuantity = (index, value) => {
+    const next = [...batchList];
+    next[index] = { ...next[index], soLuong: value };
+    setBatchList(next);
+  };
+
+  const handleLoadValidData = () => {
+    const items = (drugPage.items || []).slice(0, 3).map((d, i) => ({
+      maThuoc: d.maThuoc,
+      tenThuoc: d.tenThuoc,
+      donViTinh: d.donViTinh,
+      soLuongTon: d.soLuongTon,
+      soLuong: (i + 1) * 20,
+    }));
+    setBatchList(items);
+  };
+
+  const handleLoadNegativeError = () => {
+    const items = (drugPage.items || []).slice(0, 2).map((d, i) => ({
+      maThuoc: d.maThuoc,
+      tenThuoc: d.tenThuoc,
+      donViTinh: d.donViTinh,
+      soLuongTon: d.soLuongTon,
+      soLuong: i === 0 ? 50 : -99,
+    }));
+    setBatchList(items);
+  };
+
+  const handleLoadTextError = () => {
+    const items = (drugPage.items || []).slice(0, 2).map((d, i) => ({
+      maThuoc: d.maThuoc,
+      tenThuoc: d.tenThuoc,
+      donViTinh: d.donViTinh,
+      soLuongTon: d.soLuongTon,
+      soLuong: i === 0 ? 50 : 'loi_dau_vao_abc',
+    }));
+    setBatchList(items);
+  };
+
+  const handleExecuteBatchRestock = async () => {
+    if (!batchList || batchList.length === 0) return;
+    try {
+      const payload = batchList.map((item) => ({
+        maThuoc: item.maThuoc,
+        soLuong: item.soLuong,
+      }));
+      await batchRestock(payload);
+      setBatchModalVisible(false);
     } catch {
       // Handled in store
     }
@@ -325,6 +423,15 @@ const DrugInventoryPage = () => {
         subtitle="Quản lý vòng đời dược phẩm (CRUD), kiểm kê tồn kho và kiểm toán biến động giá tự động"
         extra={
           <Space>
+            <Button
+              type="primary"
+              icon={<ThunderboltOutlined />}
+              size="large"
+              style={{ backgroundColor: '#ea580c', borderColor: '#ea580c', fontWeight: 600 }}
+              onClick={handleOpenBatchRestock}
+            >
+              Nhập Nhiều Thuốc (Transaction Demo)
+            </Button>
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -757,6 +864,144 @@ const DrugInventoryPage = () => {
             },
           ]}
           locale={{ emptyText: 'Chưa có ghi nhận thay đổi giá nào cho thuốc này (Giá hiện tại chưa từng bị sửa).' }}
+        />
+      </Modal>
+
+      {/* MODAL 5: NHẬP NHIỀU THUỐC (TRANSACTION DEMO - ACID ATOMICITY & RECOVERY) */}
+      <Modal
+        title={
+          <Space>
+            <ThunderboltOutlined style={{ color: '#ea580c' }} />
+            <span style={{ color: '#9a3412', fontWeight: 700 }}>
+              Giao Dịch Nhập Nhiều Thuốc - Transaction Recovery / Rollback (CSDL)
+            </span>
+          </Space>
+        }
+        open={batchModalVisible}
+        onCancel={() => setBatchModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setBatchModalVisible(false)}>
+            Đóng
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            icon={<ThunderboltOutlined />}
+            loading={isSubmitting}
+            style={{ backgroundColor: '#ea580c', borderColor: '#ea580c', fontWeight: 600 }}
+            onClick={handleExecuteBatchRestock}
+          >
+            Thực Hiện Giao Dịch (Execute Transaction)
+          </Button>,
+        ]}
+        width={840}
+      >
+        <Alert
+          type="warning"
+          showIcon
+          message="Kiểm thử tính toàn vẹn Transaction (Atomicity & Recovery Data)"
+          description="Thủ tục sp_gd_nhap_nhieu_thuoc trong CSDL bọc toàn bộ danh sách thuốc trong một BEGIN TRANSACTION ... ROLLBACK. Nếu 1 trong các thuốc nhập số âm, bằng 0, hoặc chữ (dữ liệu sai), CSDL sẽ lập tức ROLLBACK toàn bộ và khôi phục dữ liệu ban đầu cho tất cả các thuốc!"
+          style={{ marginBottom: 16 }}
+        />
+
+        {/* Demo Action Bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+          <Space wrap>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>Mẫu Thử Nghiệm Nhanh:</span>
+            <Button size="small" type="dashed" danger onClick={handleLoadNegativeError}>
+              Test Lỗi Số Âm (-99)
+            </Button>
+            <Button size="small" type="dashed" danger onClick={handleLoadTextError}>
+              Test Lỗi Ký Tự Chữ ("loi_dau_vao_abc")
+            </Button>
+            <Button size="small" onClick={handleLoadValidData}>
+              Nạp Dữ Liệu Hợp Lệ
+            </Button>
+          </Space>
+
+          <Space>
+            <Select
+              placeholder="Chọn thuốc thêm vào lô..."
+              style={{ width: 220 }}
+              value={selectedAddDrugCode}
+              onChange={(val) => handleAddDrugToBatch(val)}
+              allowClear
+            >
+              {(drugPage.items || [])
+                .filter((d) => !batchList.some((b) => b.maThuoc === d.maThuoc))
+                .map((d) => (
+                  <Option key={d.maThuoc} value={d.maThuoc}>
+                    {d.maThuoc} - {d.tenThuoc}
+                  </Option>
+                ))}
+            </Select>
+          </Space>
+        </div>
+
+        <Table
+          dataSource={batchList}
+          rowKey="maThuoc"
+          pagination={false}
+          size="small"
+          columns={[
+            {
+              title: 'Mã Thuốc',
+              dataIndex: 'maThuoc',
+              key: 'maThuoc',
+              width: 95,
+              render: (v) => <Tag color="blue">{v}</Tag>,
+            },
+            {
+              title: 'Tên Thuốc',
+              dataIndex: 'tenThuoc',
+              key: 'tenThuoc',
+              render: (v) => <strong>{v}</strong>,
+            },
+            {
+              title: 'ĐVT',
+              dataIndex: 'donViTinh',
+              key: 'donViTinh',
+              width: 75,
+              align: 'center',
+            },
+            {
+              title: 'Tồn Kho Hiện Tại',
+              dataIndex: 'soLuongTon',
+              key: 'soLuongTon',
+              width: 120,
+              align: 'center',
+              render: (v) => <Tag color="green">{v}</Tag>,
+            },
+            {
+              title: 'Số Lượng Nhập (Cho phép nhập âm hoặc chữ)',
+              key: 'soLuong',
+              width: 250,
+              render: (_, r, idx) => (
+                <Input
+                  value={r.soLuong}
+                  onChange={(e) => handleUpdateBatchQuantity(idx, e.target.value)}
+                  placeholder="Nhập số, số âm (-50) hoặc chữ (abc)..."
+                  style={{
+                    borderColor: isNaN(Number(r.soLuong)) || Number(r.soLuong) <= 0 ? '#ef4444' : '#10b981',
+                  }}
+                />
+              ),
+            },
+            {
+              title: '',
+              key: 'act',
+              width: 50,
+              render: (_, __, idx) => (
+                <Button
+                  type="text"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => handleRemoveBatchItem(idx)}
+                />
+              ),
+            },
+          ]}
+          locale={{ emptyText: 'Chưa có thuốc nào trong lô nhập. Vui lòng chọn thuốc thêm vào.' }}
         />
       </Modal>
     </div>

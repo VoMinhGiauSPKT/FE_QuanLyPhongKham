@@ -130,4 +130,21 @@ export const usePharmacyStore = create((set, get) => ({
       set({ priceHistoryList: [], priceHistoryLoading: false });
     }
   },
+
+  // Transaction 6: Nhập kho nhiều loại thuốc đồng thời (Atomic Batch Restock - Recovery Data)
+  batchRestock: async (danhSachThuoc) => {
+    set({ isSubmitting: true });
+    try {
+      const res = await pharmacyService.batchRestock(danhSachThuoc);
+      showSuccess(res?.message || 'Giao dịch nhập kho nhiều loại thuốc thành công 100%!');
+      const { drugPage, searchKeyword, statusFilter } = get();
+      get().fetchInventory(drugPage.page, drugPage.size, searchKeyword, statusFilter);
+      get().fetchAlerts();
+      set({ isSubmitting: false });
+      return res;
+    } catch (err) {
+      set({ isSubmitting: false });
+      throw err;
+    }
+  },
 }));

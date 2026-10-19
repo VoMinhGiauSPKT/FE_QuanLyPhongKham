@@ -38,6 +38,7 @@ export const API_ENDPOINTS = {
     ALERTS: '/duoc-si/canh-bao',
     DRUG_MANAGEMENT: '/duoc-si/thuoc',
     PRICE_HISTORY: '/duoc-si/nhat-ky-gia',
+    BATCH_RESTOCK: '/duoc-si/nhap-nhieu-thuoc',
   },
 
   // Admin (Quản trị viên)

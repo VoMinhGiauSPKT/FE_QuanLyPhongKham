@@ -45,4 +45,11 @@ export const pharmacyService = {
       params: { maThuoc },
     });
   },
+
+  // Transaction 6: Nhập nhiều loại thuốc đồng thời (Atomic Batch Restock - Recovery Data)
+  batchRestock: async (danhSachThuoc) => {
+    return await axiosClient.post(API_ENDPOINTS.PHARMACY.BATCH_RESTOCK, {
+      danhSachThuoc,
+    });
+  },
 };
