@@ -46,6 +46,7 @@ const LoginPage = () => {
 
   const setTestAccount = (username, password) => {
     form.setFieldsValue({ username, password });
+    form.submit();
   };
 
   return (

@@ -60,5 +60,33 @@ export const adminService = {
       params: { maHoaDon },
     });
   },
+
+  // Quản lý danh mục dịch vụ khám & cận lâm sàng (CRUD)
+  getServices: async (params) => {
+    return await axiosClient.get(API_ENDPOINTS.ADMIN.SERVICES, { params });
+  },
+
+  createService: async (serviceData) => {
+    return await axiosClient.post(API_ENDPOINTS.ADMIN.SERVICES, serviceData);
+  },
+
+  updateService: async (serviceData) => {
+    return await axiosClient.put(API_ENDPOINTS.ADMIN.SERVICES, serviceData);
+  },
+
+  toggleServiceStatus: async (maDichVu, trangThai) => {
+    return await axiosClient.put(API_ENDPOINTS.ADMIN.SERVICES, {
+      maDichVu,
+      trangThai,
+      action: 'toggle_status',
+    });
+  },
+
+  deleteService: async (maDichVu) => {
+    return await axiosClient.delete(API_ENDPOINTS.ADMIN.SERVICES, {
+      params: { id: maDichVu },
+    });
+  },
 };
+
 

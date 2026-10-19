@@ -1,0 +1,30 @@
+.service-management-page {
+  padding: 0 4px;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+
+
+  .table-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    .filter-toolbar {
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px dashed #f0f0f0;
+    }
+
+    .ant-table-thead > tr > th {
+      background: #fafafa;
+      font-weight: 600;
+    }
+  }
+}

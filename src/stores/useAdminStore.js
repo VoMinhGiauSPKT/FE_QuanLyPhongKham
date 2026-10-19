@@ -10,6 +10,8 @@ export const useAdminStore = create((set, get) => ({
   userList: [],
   invoiceList: [],
   selectedInvoice: null,
+  serviceList: [],
+  loadingServices: false,
   isLoading: false,
   isSubmitting: false,
   isLoadingInvoiceDetail: false,
@@ -153,5 +155,74 @@ export const useAdminStore = create((set, get) => ({
   clearSelectedInvoice: () => {
     set({ selectedInvoice: null });
   },
+
+  // Quản lý danh mục dịch vụ khám & cận lâm sàng (CRUD)
+  fetchServices: async (params = {}) => {
+    set({ loadingServices: true });
+    try {
+      const data = await adminService.getServices(params);
+      set({ serviceList: Array.isArray(data) ? data : [], loadingServices: false });
+    } catch {
+      set({ serviceList: [], loadingServices: false });
+    }
+  },
+
+  createService: async (serviceData) => {
+    set({ isSubmitting: true });
+    try {
+      const res = await adminService.createService(serviceData);
+      message.success('Thêm mới dịch vụ thành công!');
+      await get().fetchServices();
+      set({ isSubmitting: false });
+      return res;
+    } catch (err) {
+      set({ isSubmitting: false });
+      throw err;
+    }
+  },
+
+  updateService: async (serviceData) => {
+    set({ isSubmitting: true });
+    try {
+      const res = await adminService.updateService(serviceData);
+      message.success('Cập nhật dịch vụ thành công!');
+      await get().fetchServices();
+      set({ isSubmitting: false });
+      return res;
+    } catch (err) {
+      set({ isSubmitting: false });
+      throw err;
+    }
+  },
+
+  toggleServiceStatus: async (maDichVu, trangThai) => {
+    try {
+      await adminService.toggleServiceStatus(maDichVu, trangThai);
+      message.success(`Đã ${trangThai ? 'kích hoạt' : 'tạm ngưng'} dịch vụ ${maDichVu}!`);
+      // Update local state directly for snappy UI
+      set((state) => ({
+        serviceList: state.serviceList.map((dv) =>
+          dv.maDichVu === maDichVu ? { ...dv, trangThai } : dv
+        ),
+      }));
+    } catch (err) {
+      message.error('Không thể cập nhật trạng thái dịch vụ!');
+      throw err;
+    }
+  },
+
+  deleteService: async (maDichVu) => {
+    try {
+      const res = await adminService.deleteService(maDichVu);
+      const msg = res?.message || 'Xử lý dịch vụ thành công!';
+      message.success(msg);
+      await get().fetchServices();
+      return res;
+    } catch (err) {
+      message.error('Lỗi khi xóa dịch vụ!');
+      throw err;
+    }
+  },
 }));
+
 

@@ -32,5 +32,6 @@ export const ROUTE_PATHS = {
     ANALYTICS: '/admin/analytics',
     PRODUCTIVITY: '/admin/productivity',
     INVOICES: '/admin/invoices',
+    SERVICES: '/admin/services',
   },
 };

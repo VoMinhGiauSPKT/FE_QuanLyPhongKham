@@ -48,5 +48,6 @@ export const API_ENDPOINTS = {
     USER_STATUS: '/admin/nguoi-dung/status',
     USER_RESET_PASSWORD: '/admin/nguoi-dung/reset-password',
     INVOICES: '/admin/hoa-don',
+    SERVICES: '/admin/dich-vu',
   },
 };

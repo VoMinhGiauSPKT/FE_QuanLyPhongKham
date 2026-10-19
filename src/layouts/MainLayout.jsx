@@ -15,6 +15,7 @@ import {
   UserOutlined,
   HeartFilled,
   FileTextOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/useAuthStore';
@@ -109,6 +110,11 @@ const MainLayout = () => {
             key: ROUTE_PATHS.ADMIN.PRODUCTIVITY,
             icon: <RiseOutlined />,
             label: 'Năng Suất Bác Sĩ',
+          },
+          {
+            key: ROUTE_PATHS.ADMIN.SERVICES,
+            icon: <AppstoreOutlined />,
+            label: 'Quản Lý Dịch Vụ',
           },
           {
             key: ROUTE_PATHS.ADMIN.INVOICES,

@@ -31,6 +31,7 @@ import UserManagementPage from '../modules/admin/UserManagementPage';
 import RevenueAnalyticsPage from '../modules/admin/RevenueAnalyticsPage';
 import DoctorProductivityPage from '../modules/admin/DoctorProductivityPage';
 import InvoiceHistoryPage from '../modules/admin/InvoiceHistoryPage';
+import ServiceManagementPage from '../modules/admin/ServiceManagementPage';
 
 // Helper component for smart Root redirect
 const RootRedirect = () => {
@@ -175,6 +176,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
               <InvoiceHistoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTE_PATHS.ADMIN.SERVICES}
+          element={
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+              <ServiceManagementPage />
             </ProtectedRoute>
           }
         />
