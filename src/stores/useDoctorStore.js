@@ -15,6 +15,7 @@ export const useDoctorStore = create((set, get) => ({
   },
   prescriptions: [], // Array of { maThuoc, tenThuoc, donViTinh, donGia, soLuong, cachDung, huongDan }
   serviceOrders: [], // Array of { maDichVu, tenDichVu, donGia, soLuong }
+  availableServices: [], // Array of { maDichVu, tenDichVu, donGia, moTa }
   isLoading: false,
   isSubmitting: false,
 
@@ -69,6 +70,17 @@ export const useDoctorStore = create((set, get) => ({
       set({
         availableDrugsPage: { items: [], page: 1, size: 10, totalElements: 0, totalPages: 0 },
       });
+    }
+  },
+
+  // Lấy danh mục dịch vụ cận lâm sàng từ CSDL
+  fetchAvailableServices: async () => {
+    try {
+      const data = await doctorService.getAvailableServices();
+      set({ availableServices: Array.isArray(data) ? data : [] });
+      return data;
+    } catch {
+      set({ availableServices: [] });
     }
   },
 

@@ -27,9 +27,10 @@ import DrugInventoryPage from '../modules/pharmacy/DrugInventoryPage';
 import DrugAlertPage from '../modules/pharmacy/DrugAlertPage';
 
 // Admin
-import DailyReportPage from '../modules/admin/DailyReportPage';
+import UserManagementPage from '../modules/admin/UserManagementPage';
 import RevenueAnalyticsPage from '../modules/admin/RevenueAnalyticsPage';
 import DoctorProductivityPage from '../modules/admin/DoctorProductivityPage';
+import InvoiceHistoryPage from '../modules/admin/InvoiceHistoryPage';
 
 // Helper component for smart Root redirect
 const RootRedirect = () => {
@@ -39,7 +40,7 @@ const RootRedirect = () => {
   }
   switch (user.role) {
     case ROLES.ADMIN:
-      return <Navigate to={ROUTE_PATHS.ADMIN.DAILY_REPORT} replace />;
+      return <Navigate to={ROUTE_PATHS.ADMIN.ANALYTICS} replace />;
     case ROLES.DOCTOR:
       return <Navigate to={ROUTE_PATHS.DOCTOR.QUEUE} replace />;
     case ROLES.RECEPTIONIST:
@@ -142,12 +143,16 @@ const AppRoutes = () => {
 
         {/* Admin Routes */}
         <Route
-          path={ROUTE_PATHS.ADMIN.DAILY_REPORT}
+          path={ROUTE_PATHS.ADMIN.USERS}
           element={
             <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
-              <DailyReportPage />
+              <UserManagementPage />
             </ProtectedRoute>
           }
+        />
+        <Route
+          path={ROUTE_PATHS.ADMIN.DAILY_REPORT}
+          element={<Navigate to={ROUTE_PATHS.ADMIN.ANALYTICS} replace />}
         />
         <Route
           path={ROUTE_PATHS.ADMIN.ANALYTICS}
@@ -162,6 +167,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
               <DoctorProductivityPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTE_PATHS.ADMIN.INVOICES}
+          element={
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+              <InvoiceHistoryPage />
             </ProtectedRoute>
           }
         />

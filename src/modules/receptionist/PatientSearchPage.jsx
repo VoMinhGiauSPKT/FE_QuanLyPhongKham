@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Table, Input, Flex } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { Card, Table, Input, Flex, Button, Tag } from 'antd';
+import { SearchOutlined, CalendarOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { useReceptionistStore } from '../../stores/useReceptionistStore';
 import { useDebounce } from '../../hooks/useDebounce';
 import PageHeader from '../../components/PageHeader';
-import { formatDate } from '../../utils/formatDate';
+import { formatDate, calculateAge } from '../../utils/formatDate';
+import { ROUTE_PATHS } from '../../constants/routePaths';
 
 const PatientSearchPage = () => {
+  const navigate = useNavigate();
   const { patientPage, searchPatients, isLoading } = useReceptionistStore();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedKeyword = useDebounce(searchTerm, 400);
@@ -69,6 +72,27 @@ const PatientSearchPage = () => {
       key: 'ngayTao',
       width: 130,
       render: (val) => formatDate(val),
+    },
+    {
+      title: 'Thao Tác',
+      key: 'action',
+      width: 130,
+      align: 'center',
+      render: (_, record) => (
+        <Button
+          type="primary"
+          size="small"
+          icon={<CalendarOutlined />}
+          style={{ backgroundColor: '#0d9488' }}
+          onClick={() =>
+            navigate(ROUTE_PATHS.RECEPTIONIST.ADMISSION, {
+              state: { patient: record },
+            })
+          }
+        >
+          Đặt khám
+        </Button>
+      ),
     },
   ];
 

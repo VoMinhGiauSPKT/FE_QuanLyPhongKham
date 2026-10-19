@@ -59,6 +59,27 @@ const DoctorQueuePage = () => {
       width: 130,
     },
     {
+      title: 'Loại Khám',
+      dataIndex: 'loaiLichHen',
+      key: 'loaiLichHen',
+      width: 110,
+      align: 'center',
+      render: (type, record) => {
+        const isFollowUp =
+          type === 'Tái khám' ||
+          (record.ghiChu && record.ghiChu.toLowerCase().includes('tái khám'));
+        return isFollowUp ? (
+          <Tag color="geekblue" style={{ fontWeight: 600, borderRadius: 12, padding: '2px 10px' }}>
+            Tái Khám
+          </Tag>
+        ) : (
+          <Tag color="green" style={{ fontWeight: 500, borderRadius: 12, padding: '2px 10px' }}>
+            Khám Mới
+          </Tag>
+        );
+      },
+    },
+    {
       title: 'Phòng Khám',
       dataIndex: 'phongKham',
       key: 'phongKham',

@@ -21,6 +21,11 @@ export const doctorService = {
     });
   },
 
+  // Lấy danh mục dịch vụ cận lâm sàng khả dụng từ CSDL
+  getAvailableServices: async () => {
+    return await axiosClient.get(API_ENDPOINTS.DOCTOR.ORDER_SERVICE);
+  },
+
   // Chỉ định dịch vụ cận lâm sàng
   orderService: async (data) => {
     return await axiosClient.post(API_ENDPOINTS.DOCTOR.ORDER_SERVICE, data);
@@ -29,5 +34,10 @@ export const doctorService = {
   // Hoàn tất khám: Tạo hồ sơ & kê đơn thuốc
   completeExamination: async (data) => {
     return await axiosClient.post(API_ENDPOINTS.DOCTOR.COMPLETE_EXAMINATION, data);
+  },
+
+  // Lấy danh sách các bác sĩ đang hoạt động (dùng cho tiếp nhận khám bệnh)
+  getActiveDoctors: async () => {
+    return await axiosClient.get(API_ENDPOINTS.DOCTOR.ACTIVE_DOCTORS);
   },
 };

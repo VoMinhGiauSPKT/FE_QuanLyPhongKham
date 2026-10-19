@@ -27,8 +27,10 @@ export const ROUTE_PATHS = {
   // Admin
   ADMIN: {
     ROOT: '/admin',
+    USERS: '/admin/users',
     DAILY_REPORT: '/admin/daily-report',
     ANALYTICS: '/admin/analytics',
     PRODUCTIVITY: '/admin/productivity',
+    INVOICES: '/admin/invoices',
   },
 };

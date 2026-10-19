@@ -9,12 +9,12 @@ import {
   UnorderedListOutlined,
   DatabaseOutlined,
   AlertOutlined,
-  DashboardOutlined,
   BarChartOutlined,
   RiseOutlined,
   LogoutOutlined,
   UserOutlined,
   HeartFilled,
+  FileTextOutlined,
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/useAuthStore';
@@ -96,9 +96,9 @@ const MainLayout = () => {
       case ROLES.ADMIN:
         return [
           {
-            key: ROUTE_PATHS.ADMIN.DAILY_REPORT,
-            icon: <DashboardOutlined />,
-            label: 'Báo Cáo Hôm Nay',
+            key: ROUTE_PATHS.ADMIN.USERS,
+            icon: <TeamOutlined />,
+            label: 'Quản Lý Nhân Sự',
           },
           {
             key: ROUTE_PATHS.ADMIN.ANALYTICS,
@@ -109,6 +109,11 @@ const MainLayout = () => {
             key: ROUTE_PATHS.ADMIN.PRODUCTIVITY,
             icon: <RiseOutlined />,
             label: 'Năng Suất Bác Sĩ',
+          },
+          {
+            key: ROUTE_PATHS.ADMIN.INVOICES,
+            icon: <FileTextOutlined />,
+            label: 'Lịch Sử Hóa Đơn',
           },
         ];
 

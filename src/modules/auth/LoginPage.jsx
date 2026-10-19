@@ -25,7 +25,7 @@ const LoginPage = () => {
       // Navigate to corresponding home page
       switch (user.role) {
         case ROLES.ADMIN:
-          navigate(ROUTE_PATHS.ADMIN.DAILY_REPORT);
+          navigate(ROUTE_PATHS.ADMIN.ANALYTICS);
           break;
         case ROLES.DOCTOR:
           navigate(ROUTE_PATHS.DOCTOR.QUEUE);
