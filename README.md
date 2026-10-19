@@ -2,6 +2,9 @@
 
 Giao diện người dùng Web SPA (Single Page Application) cho Đồ án **Quản Lý Phòng Khám Tư Nhân (Medicare Clinic)**, được xây dựng trên nền tảng **React 19**, **Vite**, **Ant Design v6**, **Zustand** và **Axios**.
 
+* 🔗 **Frontend Repository:** [https://github.com/VoMinhGiauSPKT/FE_QuanLyPhongKham](https://github.com/VoMinhGiauSPKT/FE_QuanLyPhongKham)
+* 🔗 **Backend Repository:** [https://github.com/VoMinhGiauSPKT/BE_QuanLyPhongKham](https://github.com/VoMinhGiauSPKT/BE_QuanLyPhongKham)
+
 ---
 
 ## 📌 1. CÔNG NGHỆ SỬ DỤNG
