@@ -4,6 +4,12 @@ import { showSuccess } from '../utils/notificationUtil';
 
 export const useReceptionistStore = create((set, get) => ({
   queueList: [],
+  pendingCheckoutList: [],
+  selectedCheckoutDetail: null,
+  lastCompletedInvoice: null,
+  isReceiptOpen: false,
+  isLoadingPending: false,
+  isLoadingDetail: false,
   patientPage: {
     items: [],
     page: 1,
@@ -13,6 +19,38 @@ export const useReceptionistStore = create((set, get) => ({
   },
   isLoading: false,
   isSubmitting: false,
+
+  // Lấy danh sách ca chờ thanh toán
+  fetchPendingCheckout: async (keyword = '') => {
+    set({ isLoadingPending: true });
+    try {
+      const data = await receptionistService.getPendingCheckoutList(keyword);
+      set({ pendingCheckoutList: Array.isArray(data) ? data : [], isLoadingPending: false });
+    } catch {
+      set({ isLoadingPending: false });
+    }
+  },
+
+  // Lấy chi tiết bảng kê viện phí của ca khám
+  fetchCheckoutDetail: async (maHoSo) => {
+    set({ isLoadingDetail: true });
+    try {
+      const data = await receptionistService.getCheckoutDetail(maHoSo);
+      set({ selectedCheckoutDetail: data, isLoadingDetail: false });
+      return data;
+    } catch (err) {
+      set({ isLoadingDetail: false });
+      throw err;
+    }
+  },
+
+  clearSelectedCheckoutDetail: () => {
+    set({ selectedCheckoutDetail: null });
+  },
+
+  closeReceiptModal: () => {
+    set({ isReceiptOpen: false, lastCompletedInvoice: null });
+  },
 
   // Lấy danh sách hàng chờ khám hôm nay
   fetchQueue: async () => {
@@ -64,10 +102,24 @@ export const useReceptionistStore = create((set, get) => ({
   checkoutInvoice: async (checkoutData) => {
     set({ isSubmitting: true });
     try {
-      await receptionistService.checkoutInvoice(checkoutData);
+      const invoiceResult = await receptionistService.checkoutInvoice(checkoutData);
       showSuccess('Thanh toán hóa đơn viện phí thành công!');
+      
+      // Ghép chi tiết vào receipt nếu có selectedCheckoutDetail
+      const fullReceipt = {
+        ...invoiceResult,
+        patientInfo: get().selectedCheckoutDetail,
+      };
+      set({ 
+        lastCompletedInvoice: fullReceipt, 
+        isReceiptOpen: true,
+        selectedCheckoutDetail: null,
+        isSubmitting: false 
+      });
+
+      get().fetchPendingCheckout();
       get().fetchQueue();
-      set({ isSubmitting: false });
+      return invoiceResult;
     } catch (err) {
       set({ isSubmitting: false });
       throw err;
