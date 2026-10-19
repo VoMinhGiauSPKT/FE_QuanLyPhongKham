@@ -43,6 +43,18 @@ const PatientSearchPage = () => {
       render: (val) => formatDate(val),
     },
     {
+      title: 'Tuổi',
+      dataIndex: 'tuoi',
+      key: 'tuoi',
+      width: 95,
+      align: 'center',
+      render: (val, record) => (
+        <Tag color="cyan" style={{ fontWeight: 600, fontSize: 13, borderRadius: 12 }}>
+          {val !== undefined && val !== null ? `${val} tuổi` : (record.ngaySinh ? `${calculateAge(record.ngaySinh)} tuổi` : '---')}
+        </Tag>
+      ),
+    },
+    {
       title: 'Giới Tính',
       dataIndex: 'gioiTinh',
       key: 'gioiTinh',
@@ -100,7 +112,7 @@ const PatientSearchPage = () => {
     <div>
       <PageHeader
         title="Tra Cứu Hồ Sơ Bệnh Nhân"
-        subtitle="Tìm kiếm theo Tên, Số điện thoại hoặc CCCD có phân trang server (Stored Procedure sp_tim_kiem_benh_nhan)"
+        subtitle="Tìm kiếm theo Tên, Số điện thoại hoặc CCCD có phân trang server (Stored Procedure sp_tim_kiem_benh_nhan, Function fn_tinh_tuoi)"
       />
 
       <Card>

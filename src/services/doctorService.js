@@ -14,10 +14,10 @@ export const doctorService = {
     });
   },
 
-  // Tra cứu danh mục thuốc khả dụng có phân trang
-  getAvailableDrugs: async (q = '', page = 1, size = 10) => {
+  // Tra cứu danh mục thuốc khả dụng có phân trang (hỗ trợ includeExpired để kiểm thử Trigger 2)
+  getAvailableDrugs: async (q = '', page = 1, size = 10, includeExpired = false) => {
     return await axiosClient.get(API_ENDPOINTS.DOCTOR.AVAILABLE_DRUGS, {
-      params: { q, page, size },
+      params: { q, page, size, includeExpired },
     });
   },
 

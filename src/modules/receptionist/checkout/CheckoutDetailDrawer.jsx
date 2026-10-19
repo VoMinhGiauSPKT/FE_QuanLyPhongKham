@@ -15,6 +15,8 @@ import {
   Tag,
   Typography,
   Space,
+  InputNumber,
+  Popconfirm,
 } from 'antd';
 import {
   DollarCircleOutlined,
@@ -23,8 +25,13 @@ import {
   ExperimentOutlined,
   SafetyCertificateOutlined,
   PrinterOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { useReceptionistStore } from '../../../stores/useReceptionistStore';
+import axiosClient from '../../../api/axiosClient';
+import { API_ENDPOINTS } from '../../../constants/apiEndpoints';
+import { showSuccess } from '../../../utils/notificationUtil';
 
 const { Title, Text } = Typography;
 
@@ -37,10 +44,27 @@ const CheckoutDetailDrawer = ({
   onConfirmCheckout,
 }) => {
   const [form] = Form.useForm();
+  const { cancelPrescription, fetchCheckoutDetail } = useReceptionistStore();
+  const watchedDiscount = Form.useWatch('tienGiamGia', form) || 0;
+
+  const handleDeleteService = async (maChiDinh) => {
+    if (!maChiDinh) return;
+    try {
+      await axiosClient.delete(API_ENDPOINTS.DOCTOR.ORDER_SERVICE, {
+        params: { maChiDinh },
+      });
+      showSuccess('Xóa chỉ định dịch vụ thành công!');
+      const maHoSo = detail.maHoSo || detail.maHoSoCode;
+      await fetchCheckoutDetail(maHoSo);
+    } catch {
+      // Handled in axiosClient
+    }
+  };
 
   useEffect(() => {
     if (open && detail) {
       form.setFieldsValue({
+        tienGiamGia: detail.tienGiamGia || 0,
         hinhThucThanhToan: detail.hinhThucThanhToan || 'Tiền mặt',
       });
     }
@@ -53,6 +77,7 @@ const CheckoutDetailDrawer = ({
   const serviceTotal = Number(detail?.tienDichVu) || 0;
   const drugTotal = Number(detail?.tienThuoc) || 0;
   const subtotal = serviceTotal + drugTotal;
+  const netTotal = Math.max(0, subtotal - Number(watchedDiscount));
 
   const isAlreadyPaid = detail?.trangThaiHoaDon === 'Đã thanh toán';
 
@@ -60,9 +85,15 @@ const CheckoutDetailDrawer = ({
     if (!detail) return;
     await onConfirmCheckout({
       maHoSo: detail.maHoSo || detail.maHoSoCode,
-      tienGiamGia: 0,
+      tienGiamGia: Number(values.tienGiamGia) || 0,
       hinhThucThanhToan: values.hinhThucThanhToan,
     });
+  };
+
+  const handleCancelPrescription = async () => {
+    if (!detail) return;
+    const maHoSo = detail.maHoSo || detail.maHoSoCode;
+    await cancelPrescription(maHoSo);
   };
 
   const serviceColumns = [
@@ -103,6 +134,34 @@ const CheckoutDetailDrawer = ({
         <span style={{ fontWeight: 600, color: '#0f766e' }}>
           {Number(val || 0).toLocaleString('vi-VN')} đ
         </span>
+      ),
+    },
+    {
+      title: 'Trạng Thái',
+      dataIndex: 'trangThai',
+      key: 'trangThai',
+      width: 125,
+      render: (val) => (
+        <Tag color={val === 'Đã có kết quả' ? 'green' : 'blue'}>
+          {val || 'Chưa thực hiện'}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Xóa',
+      key: 'action',
+      width: 65,
+      align: 'center',
+      render: (_, record) => (
+        <Popconfirm
+          title="Xóa chỉ định dịch vụ này?"
+          description="Gọi Stored Procedure sp_xoa_chi_dinh_dich_vu. Nếu đã có kết quả cận lâm sàng, CSDL sẽ từ chối."
+          onConfirm={() => handleDeleteService(record.maChiDinh)}
+          okText="Xóa"
+          cancelText="Hủy"
+        >
+          <Button type="text" danger size="small" icon={<DeleteOutlined />} />
+        </Popconfirm>
       ),
     },
   ];
@@ -271,12 +330,32 @@ const CheckoutDetailDrawer = ({
 
             {/* Phần 2: Đơn thuốc điều trị */}
             <div style={{ marginBottom: 24 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 }}>
                 <Space>
                   <MedicineBoxOutlined style={{ color: '#2563eb', fontSize: 16 }} />
                   <Text strong style={{ fontSize: 14 }}>2. Đơn Thuốc Điều Trị</Text>
+                  <Tag color="geekblue">{drugs.length} loại thuốc</Tag>
                 </Space>
-                <Tag color="geekblue">{drugs.length} loại thuốc</Tag>
+
+                {drugs.length > 0 && (
+                  <Popconfirm
+                    title="Hủy đơn thuốc và hoàn lại kho?"
+                    description="Kích hoạt Stored Procedure sp_gd_huy_don_thuoc. Trigger trg_xoa_don_hoan_kho sẽ tự động cộng trả số lượng vào kho dược. Nếu hóa đơn đã thanh toán, CSDL sẽ từ chối."
+                    onConfirm={handleCancelPrescription}
+                    okText="Xác nhận hủy"
+                    cancelText="Đóng"
+                  >
+                    <Button
+                      danger
+                      size="small"
+                      icon={<DeleteOutlined />}
+                      loading={isSubmitting}
+                      style={{ fontWeight: 600 }}
+                    >
+                      Hủy Đơn Thuốc (Hoàn Kho - Trigger 3)
+                    </Button>
+                  </Popconfirm>
+                )}
               </div>
 
               {drugs.length > 0 ? (
@@ -313,7 +392,7 @@ const CheckoutDetailDrawer = ({
               title={
                 <Space>
                   <DollarCircleOutlined style={{ color: '#0d9488' }} />
-                  <span>Quyết Toán Viện Phí & Phương Thức Thu</span>
+                  <span>Quyết Toán Viện Phí & Phương Thức Thu (Transaction 1)</span>
                 </Space>
               }
               style={{
@@ -367,8 +446,13 @@ const CheckoutDetailDrawer = ({
                         Số tiền người bệnh phải thanh toán
                       </div>
                       <div style={{ fontSize: 24, fontWeight: 800, color: '#0d9488', margin: '4px 0' }}>
-                        {subtotal.toLocaleString('vi-VN')} đ
+                        {netTotal.toLocaleString('vi-VN')} đ
                       </div>
+                      {Number(watchedDiscount) > 0 && (
+                        <div style={{ fontSize: 12, color: '#dc2626' }}>
+                          (Đã trừ giảm giá: -{Number(watchedDiscount).toLocaleString('vi-VN')} đ)
+                        </div>
+                      )}
                     </div>
                   </Col>
                 </Row>
@@ -376,7 +460,22 @@ const CheckoutDetailDrawer = ({
                 {!isAlreadyPaid && (
                   <>
                     <Row gutter={16} style={{ marginTop: 16 }}>
-                      <Col span={24}>
+                      <Col span={12}>
+                        <Form.Item
+                          name="tienGiamGia"
+                          label="Tiền Giảm Giá (VNĐ)"
+                          extra="Nhập số tiền giảm giá bất kỳ (Không chặn max để CSDL kiểm tra Transaction 1)"
+                        >
+                          <InputNumber
+                            min={0}
+                            style={{ width: '100%' }}
+                            size="large"
+                            formatter={(val) => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            parser={(val) => val.replace(/\$\s?|(,*)/g, '')}
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
                         <Form.Item
                           name="hinhThucThanhToan"
                           label="Hình thức thanh toán"
@@ -407,7 +506,7 @@ const CheckoutDetailDrawer = ({
                           fontWeight: 700,
                         }}
                       >
-                        Xác Nhận & Xuất Hóa Đơn ({subtotal.toLocaleString('vi-VN')} đ)
+                        Xác Nhận & Xuất Hóa Đơn ({netTotal.toLocaleString('vi-VN')} đ)
                       </Button>
                     </Form.Item>
                   </>

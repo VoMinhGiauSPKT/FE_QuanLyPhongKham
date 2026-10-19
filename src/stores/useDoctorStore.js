@@ -53,10 +53,10 @@ export const useDoctorStore = create((set, get) => ({
     }
   },
 
-  // Tra cứu thuốc khả dụng có phân trang
-  fetchAvailableDrugs: async (q = '', page = 1, size = 10) => {
+  // Tra cứu thuốc khả dụng có phân trang (hỗ trợ includeExpired để kiểm thử Trigger 2)
+  fetchAvailableDrugs: async (q = '', page = 1, size = 10, includeExpired = false) => {
     try {
-      const data = await doctorService.getAvailableDrugs(q, page, size);
+      const data = await doctorService.getAvailableDrugs(q, page, size, includeExpired);
       set({
         availableDrugsPage: {
           items: data?.items || [],

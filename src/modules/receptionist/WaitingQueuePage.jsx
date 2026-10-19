@@ -103,7 +103,6 @@ const WaitingQueuePage = () => {
           danger
           size="small"
           icon={<StopOutlined />}
-          disabled={record.trangThai !== 'Chờ khám'}
           onClick={() => handleOpenCancel(record)}
         >
           Hủy Lịch

@@ -104,17 +104,17 @@ export const useReceptionistStore = create((set, get) => ({
     try {
       const invoiceResult = await receptionistService.checkoutInvoice(checkoutData);
       showSuccess('Thanh toán hóa đơn viện phí thành công!');
-      
+
       // Ghép chi tiết vào receipt nếu có selectedCheckoutDetail
       const fullReceipt = {
         ...invoiceResult,
         patientInfo: get().selectedCheckoutDetail,
       };
-      set({ 
-        lastCompletedInvoice: fullReceipt, 
+      set({
+        lastCompletedInvoice: fullReceipt,
         isReceiptOpen: true,
         selectedCheckoutDetail: null,
-        isSubmitting: false 
+        isSubmitting: false
       });
 
       get().fetchPendingCheckout();
@@ -134,6 +134,25 @@ export const useReceptionistStore = create((set, get) => ({
       showSuccess('Hủy lịch hẹn thành công!');
       get().fetchQueue();
       set({ isSubmitting: false });
+    } catch (err) {
+      set({ isSubmitting: false });
+      throw err;
+    }
+  },
+
+  // Hủy đơn thuốc (kích hoạt Trigger trg_xoa_don_hoan_kho qua sp_gd_huy_don_thuoc)
+  cancelPrescription: async (maHoSo) => {
+    set({ isSubmitting: true });
+    try {
+      const res = await receptionistService.cancelPrescription(maHoSo);
+      showSuccess(res?.message || 'Hủy đơn thuốc thành công! Trigger trg_xoa_don_hoan_kho đã hoàn trả tồn kho.');
+      // Refresh current detail
+      if (get().selectedCheckoutDetail) {
+        await get().fetchCheckoutDetail(maHoSo);
+      }
+      get().fetchPendingCheckout();
+      set({ isSubmitting: false });
+      return res;
     } catch (err) {
       set({ isSubmitting: false });
       throw err;

@@ -110,6 +110,7 @@ const NewPatientTab = ({ initialValues = {} }) => {
               <Select.Option value="Nam">Nam</Select.Option>
               <Select.Option value="Nữ">Nữ</Select.Option>
               <Select.Option value="Khác">Khác</Select.Option>
+              <Select.Option value="Không hợp lệ">⚠️ Không hợp lệ (Test Ràng buộc CK_benh_nhan_gioi_tinh)</Select.Option>
             </Select>
           </Form.Item>
         </Col>
@@ -136,7 +137,6 @@ const NewPatientTab = ({ initialValues = {} }) => {
             label="Số điện thoại liên hệ"
             rules={[
               { required: true, message: 'Vui lòng nhập số điện thoại!' },
-              { pattern: /^[0-9]{10}$/, message: 'Số điện thoại phải gồm 10 chữ số!' },
             ]}
           >
             <Input placeholder="Ví dụ: 0912345678" size="large" />

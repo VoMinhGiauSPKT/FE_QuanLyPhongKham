@@ -18,6 +18,7 @@ export const API_ENDPOINTS = {
     CANCEL_APPOINTMENT: '/le-tan/huy-lich',
     FOLLOW_UP_APPOINTMENTS: '/le-tan/lich-tai-kham',
     CHECK_IN_FOLLOW_UP: '/le-tan/tiep-nhan-tai-kham',
+    CANCEL_PRESCRIPTION: '/le-tan/huy-don-thuoc',
   },
 
   // Doctor (Bác sĩ)

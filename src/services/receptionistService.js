@@ -56,4 +56,11 @@ export const receptionistService = {
       maLichHen,
     });
   },
+
+  // Hủy đơn thuốc (gọi sp_gd_huy_don_thuoc & trg_xoa_don_hoan_kho)
+  cancelPrescription: async (maHoSo) => {
+    return await axiosClient.post(API_ENDPOINTS.RECEPTIONIST.CANCEL_PRESCRIPTION, {
+      maHoSo,
+    });
+  },
 };

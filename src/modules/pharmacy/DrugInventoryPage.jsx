@@ -496,8 +496,9 @@ const DrugInventoryPage = () => {
                 name="soLuongTon"
                 label="Số Lượng Nhập Ban Đầu"
                 rules={[{ required: true, message: 'Vui lòng nhập số lượng!' }]}
+                extra="Nhập số âm (ví dụ: -10) để kiểm tra Ràng buộc CK_thuoc_so_luong_ton CSDL"
               >
-                <InputNumber min={0} max={100000} style={{ width: '100%' }} size="large" />
+                <InputNumber style={{ width: '100%' }} size="large" />
               </Form.Item>
             </Col>
           </Row>
@@ -507,10 +508,10 @@ const DrugInventoryPage = () => {
               <Form.Item
                 name="donGia"
                 label="Đơn Giá Bán (₫)"
-                rules={[{ required: true, message: 'Vui lòng nhập đơn giá lớn hơn 0!' }]}
+                rules={[{ required: true, message: 'Vui lòng nhập đơn giá!' }]}
+                extra="Nhập 0 hoặc số âm (ví dụ: -5000) để kiểm tra Ràng buộc CK_thuoc_don_gia CSDL"
               >
                 <InputNumber
-                  min={100}
                   step={500}
                   style={{ width: '100%' }}
                   size="large"
@@ -524,12 +525,12 @@ const DrugInventoryPage = () => {
                 name="hanSuDung"
                 label="Hạn Sử Dụng"
                 rules={[{ required: true, message: 'Vui lòng chọn hạn sử dụng!' }]}
+                extra="Có thể chọn ngày quá khứ để test Trigger 2 CSDL"
               >
                 <DatePicker
                   format="DD/MM/YYYY"
                   style={{ width: '100%' }}
                   size="large"
-                  disabledDate={(curr) => curr && curr <= dayjs().endOf('day')}
                 />
               </Form.Item>
             </Col>
@@ -605,10 +606,10 @@ const DrugInventoryPage = () => {
               <Form.Item
                 name="donGia"
                 label="Đơn Giá Bán (₫)"
-                rules={[{ required: true, message: 'Đơn giá phải lớn hơn 0!' }]}
+                rules={[{ required: true, message: 'Vui lòng nhập đơn giá!' }]}
+                extra="Nhập 0 hoặc số âm để kiểm tra Ràng buộc CK_thuoc_don_gia CSDL"
               >
                 <InputNumber
-                  min={100}
                   step={500}
                   style={{ width: '100%' }}
                   size="large"
@@ -674,9 +675,10 @@ const DrugInventoryPage = () => {
             name="soLuongNhap"
             label="Số lượng nhập thêm"
             rules={[{ required: true, message: 'Vui lòng nhập số lượng!' }]}
+            extra="Nhập số âm vượt quá tồn kho (ví dụ: -999) để test Ràng buộc CK_thuoc_so_luong_ton CSDL"
             initialValue={50}
           >
-            <InputNumber min={1} max={50000} style={{ width: '100%' }} size="large" />
+            <InputNumber style={{ width: '100%' }} size="large" />
           </Form.Item>
         </Form>
       </Modal>

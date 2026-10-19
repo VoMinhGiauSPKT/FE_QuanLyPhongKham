@@ -71,6 +71,7 @@ const ExaminationPage = () => {
   const [selectedDrug, setSelectedDrug] = useState(null);
   const [serviceModalVisible, setServiceModalVisible] = useState(false);
   const [drugSearch, setDrugSearch] = useState('');
+  const [includeExpired, setIncludeExpired] = useState(false);
   const debouncedDrugSearch = useDebounce(drugSearch, 350);
 
   // Fetch patient medical history on load
@@ -85,12 +86,12 @@ const ExaminationPage = () => {
     fetchAvailableServices();
   }, [fetchAvailableServices]);
 
-  // Trigger drug search when modal opens or debounced keyword changes
+  // Trigger drug search when modal opens, debounced keyword changes, or includeExpired toggle
   React.useEffect(() => {
     if (drugModalVisible) {
-      fetchAvailableDrugs(debouncedDrugSearch, 1, 10);
+      fetchAvailableDrugs(debouncedDrugSearch, 1, 10, includeExpired);
     }
-  }, [drugModalVisible, debouncedDrugSearch, fetchAvailableDrugs]);
+  }, [drugModalVisible, debouncedDrugSearch, includeExpired, fetchAvailableDrugs]);
 
   if (!activePatient) {
     return (
@@ -459,28 +460,6 @@ const ExaminationPage = () => {
         </Row>
       </Form>
 
-      {/* Drawer: Medical History */}
-      <Drawer
-        title={`Tiền Sử Bệnh Án - ${activePatient.tenBenhNhan}`}
-        placement="right"
-        size="large"
-        open={historyDrawerVisible}
-        onClose={() => setHistoryDrawerVisible(false)}
-      >
-        <Table
-          dataSource={patientHistory}
-          rowKey="maHoSo"
-          pagination={false}
-          size="small"
-          columns={[
-            { title: 'Ngày Khám', dataIndex: 'ngayKham', key: 'ngayKham', width: 130, render: (v) => formatDateTime(v) },
-            { title: 'Bác Sĩ', dataIndex: 'tenBacSi', key: 'tenBacSi' },
-            { title: 'Chẩn Đoán', dataIndex: 'chanDoan', key: 'chanDoan' },
-            { title: 'Tổng Tiền', dataIndex: 'tongTien', key: 'tongTien', width: 110, render: (v) => formatCurrency(v) },
-          ]}
-          locale={{ emptyText: 'Bệnh nhân chưa có tiền sử khám bệnh trước đây.' }}
-        />
-      </Drawer>
 
       {/* Modal: Select Medicine */}
       <Modal
@@ -499,15 +478,26 @@ const ExaminationPage = () => {
         }}
         footer={null}
       >
-        <Input
-          prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
-          placeholder="Tìm tên thuốc còn hạn & còn tồn kho..."
-          value={drugSearch}
-          onChange={(e) => setDrugSearch(e.target.value)}
-          style={{ marginBottom: 16 }}
-          size="middle"
-          allowClear
-        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+          <Input
+            prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
+            placeholder="Tìm tên thuốc..."
+            value={drugSearch}
+            onChange={(e) => setDrugSearch(e.target.value)}
+            style={{ width: 280 }}
+            size="middle"
+            allowClear
+          />
+          <Space>
+            <span style={{ fontSize: 13, color: includeExpired ? '#dc2626' : '#64748b', fontWeight: includeExpired ? 600 : 'normal' }}>
+              Hiển thị thuốc quá hạn (Test Trigger 2 CSDL):
+            </span>
+            <Switch
+              checked={includeExpired}
+              onChange={(checked) => setIncludeExpired(checked)}
+            />
+          </Space>
+        </div>
 
         <Table
           dataSource={availableDrugsPage.items}
@@ -517,7 +507,7 @@ const ExaminationPage = () => {
             current: availableDrugsPage.page,
             pageSize: availableDrugsPage.size,
             total: availableDrugsPage.totalElements,
-            onChange: (p, s) => fetchAvailableDrugs(drugSearch, p, s),
+            onChange: (p, s) => fetchAvailableDrugs(drugSearch, p, s, includeExpired),
           }}
           onRow={(record) => ({
             onClick: () => handleSelectDrug(record),
@@ -558,6 +548,25 @@ const ExaminationPage = () => {
               key: 'soLuongTon',
               width: 90,
               render: (v) => <Tag color={v > 20 ? 'green' : 'orange'}>{v}</Tag>,
+            },
+            {
+              title: 'Hạn Dùng',
+              dataIndex: 'hanSuDung',
+              key: 'hanSuDung',
+              width: 125,
+              render: (v) => {
+                const isExpired = v && dayjs(v).isBefore(dayjs(), 'day');
+                return (
+                  <Space direction="vertical" size={1}>
+                    <span style={{ color: isExpired ? '#dc2626' : 'inherit', fontSize: 12 }}>{formatDate(v)}</span>
+                    {isExpired && (
+                      <Tag color="error" style={{ fontSize: 10, padding: '0 4px', lineHeight: '18px' }}>
+                        Hết hạn (Test Trigger 2)
+                      </Tag>
+                    )}
+                  </Space>
+                );
+              },
             },
             { title: 'Đơn Giá', dataIndex: 'donGia', key: 'donGia', width: 100, render: (v) => formatCurrency(v) },
             {
@@ -657,19 +666,14 @@ const ExaminationPage = () => {
                     <Form.Item
                       name="soLuong"
                       label="Số lượng kê"
+                      extra="Không giới hạn max để CSDL kiểm tra Trigger 1"
                       rules={[
                         { required: true, message: 'Nhập số lượng!' },
-                        {
-                          type: 'number',
-                          max: selectedDrug.soLuongTon,
-                          message: `Tồn kho chỉ còn ${selectedDrug.soLuongTon}!`,
-                        },
                       ]}
                       initialValue={1}
                     >
                       <InputNumber
                         min={1}
-                        max={selectedDrug.soLuongTon || 100}
                         style={{ width: '100%' }}
                         size="large"
                       />

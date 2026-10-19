@@ -2,7 +2,7 @@ import axios from 'axios';
 import { BASE_API_URL } from '../constants/apiEndpoints';
 import { ROUTE_PATHS } from '../constants/routePaths';
 import { showError, showDbErrorNotification } from '../utils/notificationUtil';
-import { sanitizeDataPayload } from '../utils/cleanText';
+import { sanitizeDataPayload, cleanText } from '../utils/cleanText';
 
 const axiosClient = axios.create({
   baseURL: BASE_API_URL,
@@ -30,7 +30,7 @@ axiosClient.interceptors.response.use(
     const res = sanitizeDataPayload(response.data);
     // Standard ApiResponse format check
     if (res && typeof res.success === 'boolean' && !res.success) {
-      const errorMsg = res.message || 'Thao tác không thành công!';
+      const errorMsg = cleanText(res.message || 'Thao tác không thành công!');
       if (res.errorCode === 'FORBIDDEN_DB') {
         showDbErrorNotification(errorMsg);
       } else {
@@ -44,7 +44,8 @@ axiosClient.interceptors.response.use(
   (error) => {
     if (error.response) {
       const { status, data } = error.response;
-      const message = data?.message || error.message || 'Lỗi kết nối máy chủ!';
+      const rawMessage = data?.message || error.message || 'Lỗi kết nối máy chủ!';
+      const message = cleanText(rawMessage);
 
       if (status === 401) {
         localStorage.removeItem('access_token');

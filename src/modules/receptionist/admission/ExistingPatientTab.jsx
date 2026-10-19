@@ -195,7 +195,7 @@ const ExistingPatientTab = ({ initialPatient = null, onSwitchToNew }) => {
       title: 'Ngày Sinh',
       dataIndex: 'ngaySinh',
       key: 'ngaySinh',
-      render: (val) => `${formatDate(val)} (${calculateAge(val)}t)`,
+      render: (val, record) => `${formatDate(val)} (${record.tuoi !== undefined && record.tuoi !== null ? record.tuoi : calculateAge(val)}t)`,
     },
     {
       title: 'Giới Tính',
