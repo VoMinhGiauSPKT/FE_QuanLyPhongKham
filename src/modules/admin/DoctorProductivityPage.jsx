@@ -40,9 +40,8 @@ const DoctorProductivityPage = () => {
     const totalDoctors = doctorProductivity.length;
     const totalCases = doctorProductivity.reduce((acc, curr) => acc + (Number(curr.soCaKham) || 0), 0);
     const totalRev = doctorProductivity.reduce((acc, curr) => acc + (Number(curr.tongDoanhThu || curr.tongTienKham) || 0), 0);
-    const topDoctor = doctorProductivity.length > 0 ? doctorProductivity[0] : null;
 
-    return { totalDoctors, totalCases, totalRev, topDoctor };
+    return { totalDoctors, totalCases, totalRev };
   }, [doctorProductivity]);
 
   const columns = [
@@ -151,7 +150,7 @@ const DoctorProductivityPage = () => {
 
       {/* KPI Highlights */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={8}>
           <Card bordered hoverable style={{ borderColor: '#ccfbf1', background: '#f0fdfa' }}>
             <Statistic
               title={<Text strong style={{ color: '#0f766e' }}>Tổng Doanh Thu Khám & Thuốc</Text>}
@@ -163,7 +162,7 @@ const DoctorProductivityPage = () => {
           </Card>
         </Col>
 
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={8}>
           <Card bordered hoverable style={{ borderColor: '#e0f2fe', background: '#f0f9ff' }}>
             <Statistic
               title={<Text strong style={{ color: '#0369a1' }}>Tổng Ca Khám Đã Hoàn Tất</Text>}
@@ -175,21 +174,7 @@ const DoctorProductivityPage = () => {
           </Card>
         </Col>
 
-        <Col xs={24} sm={12} lg={6}>
-          <Card bordered hoverable style={{ borderColor: '#fef3c7', background: '#fffbeb' }}>
-            <Statistic
-              title={<Text strong style={{ color: '#b45309' }}>Bác Sĩ Dẫn Đầu Doanh Số</Text>}
-              value={stats.topDoctor?.tenBacSi || 'Chưa có dữ liệu'}
-              styles={{ content: { color: '#d97706', fontWeight: 700, fontSize: 18 } }}
-              prefix={<TrophyOutlined />}
-            />
-            <div style={{ marginTop: 4, fontSize: 12, color: '#64748b' }}>
-              {stats.topDoctor ? `${stats.topDoctor.soCaKham || 0} ca (${formatCurrency(stats.topDoctor.tongDoanhThu || 0)})` : ''}
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={24} lg={8}>
           <Card bordered hoverable style={{ borderColor: '#f3e8ff', background: '#faf5ff' }}>
             <Statistic
               title={<Text strong style={{ color: '#7e22ce' }}>Đội Ngũ Bác Sĩ Hoạt Động</Text>}

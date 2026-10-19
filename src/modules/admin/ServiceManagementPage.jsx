@@ -16,7 +16,6 @@ import {
   Col,
   Typography,
   Tooltip,
-  Badge,
 } from 'antd';
 import {
   MedicineBoxOutlined,
@@ -182,25 +181,6 @@ const ServiceManagementPage = () => {
             Chưa có ghi chú
           </Text>
         ),
-    },
-    {
-      title: 'Lượt Chỉ Định',
-      dataIndex: 'soLuotChiDinh',
-      key: 'soLuotChiDinh',
-      width: 130,
-      align: 'center',
-      sorter: (a, b) => (a.soLuotChiDinh || 0) - (b.soLuotChiDinh || 0),
-      render: (count) => (
-        <Badge
-          count={count || 0}
-          showZero
-          overflowCount={9999}
-          style={{
-            backgroundColor: count > 0 ? '#13c2c2' : '#d9d9d9',
-            fontWeight: 600,
-          }}
-        />
-      ),
     },
     {
       title: 'Trạng Thái',

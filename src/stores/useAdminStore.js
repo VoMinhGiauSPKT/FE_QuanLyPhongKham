@@ -8,6 +8,7 @@ export const useAdminStore = create((set, get) => ({
   dateRangeRevenue: [],
   doctorProductivity: [],
   userList: [],
+  allUserList: [],
   invoiceList: [],
   selectedInvoice: null,
   serviceList: [],
@@ -66,9 +67,27 @@ export const useAdminStore = create((set, get) => ({
     set({ isLoading: true });
     try {
       const data = await adminService.getUsers(role, q);
-      set({ userList: Array.isArray(data) ? data : [], isLoading: false });
+      const list = Array.isArray(data) ? data : [];
+      const updates = { userList: list, isLoading: false };
+      // Nếu là lấy tất cả và không tìm kiếm, lưu luôn vào allUserList làm mẫu thống kê cố định
+      if (role === 'ALL' && (!q || q.trim() === '')) {
+        updates.allUserList = list;
+      }
+      set(updates);
     } catch {
       set({ userList: [], isLoading: false });
+    }
+  },
+
+  // Lấy toàn bộ danh sách để tính thống kê cố định cho toàn phòng khám
+  fetchAllUsers: async () => {
+    try {
+      const data = await adminService.getUsers('ALL', '');
+      if (Array.isArray(data)) {
+        set({ allUserList: data });
+      }
+    } catch {
+      // ignore
     }
   },
 
@@ -79,6 +98,7 @@ export const useAdminStore = create((set, get) => ({
       const res = await adminService.createUser(userData);
       message.success('Thêm nhân viên mới thành công!');
       set({ isSubmitting: false });
+      get().fetchAllUsers();
       get().fetchUsers();
       return res;
     } catch (err) {
@@ -94,6 +114,7 @@ export const useAdminStore = create((set, get) => ({
       await adminService.updateUser(userData);
       message.success('Cập nhật thông tin nhân viên thành công!');
       set({ isSubmitting: false });
+      get().fetchAllUsers();
       get().fetchUsers();
     } catch (err) {
       set({ isSubmitting: false });
@@ -108,6 +129,7 @@ export const useAdminStore = create((set, get) => ({
       await adminService.toggleUserStatus(maNguoiDung, hoatDong);
       message.success(hoatDong ? 'Đã kích hoạt lại tài khoản!' : 'Đã khóa tài khoản nhân viên!');
       set({ isSubmitting: false });
+      get().fetchAllUsers();
       get().fetchUsers();
     } catch (err) {
       set({ isSubmitting: false });

@@ -69,7 +69,9 @@ const UserManagementPage = () => {
 
   const {
     userList,
+    allUserList,
     fetchUsers,
+    fetchAllUsers,
     createUser,
     updateUser,
     toggleUserStatus,
@@ -90,6 +92,10 @@ const UserManagementPage = () => {
   // Watch selected role in create form for conditional doctor fields
   const selectedCreateRole = Form.useWatch('vaiTro', createForm);
   const selectedEditRole = Form.useWatch('vaiTro', editForm);
+
+  useEffect(() => {
+    fetchAllUsers();
+  }, [fetchAllUsers]);
 
   useEffect(() => {
     fetchUsers(roleFilter, debouncedSearch);
@@ -185,11 +191,13 @@ const UserManagementPage = () => {
     }
   };
 
-  // Compute statistics
-  const totalStaff = userList.length;
-  const doctorCount = userList.filter((u) => u.vaiTro === 'BAC_SI').length;
-  const receptionistCount = userList.filter((u) => u.vaiTro === 'LE_TAN').length;
-  const pharmacistCount = userList.filter((u) => u.vaiTro === 'DUOC_SI').length;
+  // Compute statistics from allUserList (cố định theo toàn bộ nhân sự phòng khám, không bị nhảy khi lọc)
+  const baseList = allUserList && allUserList.length > 0 ? allUserList : userList;
+  const totalStaff = baseList.length;
+  const doctorCount = baseList.filter((u) => u.vaiTro === 'BAC_SI').length;
+  const receptionistCount = baseList.filter((u) => u.vaiTro === 'LE_TAN').length;
+  const pharmacistCount = baseList.filter((u) => u.vaiTro === 'DUOC_SI').length;
+  const adminCount = baseList.filter((u) => u.vaiTro === 'QUAN_TRI').length;
 
   const renderRoleTag = (role) => {
     switch (role) {
@@ -433,14 +441,6 @@ const UserManagementPage = () => {
         </Col>
       </Row>
 
-      <Alert
-        title="Bảo Mật Cơ Sở Dữ Liệu SQL Server (Role-Based Access Control)"
-        description="Khi thêm mới Bác sĩ hoặc nhân viên, hệ thống tự động chạy Database Transaction cập nhật đồng thời bảng nguoi_dung và bac_si, đồng thời băm mật khẩu bằng thuật toán BCrypt an toàn. Chỉ tài khoản Quản trị viên (vai_tro_quan_tri) mới có quyền can thiệp vào bảng nhân sự."
-        type="info"
-        showIcon
-        style={{ marginBottom: 20, borderRadius: 8 }}
-      />
-
       <Card style={{ borderRadius: 12 }}>
         {/* Toolbar: Filter & Search */}
         <Row gutter={[16, 16]} style={{ marginBottom: 16 }} align="middle" justify="space-between">
@@ -456,7 +456,7 @@ const UserManagementPage = () => {
                 <Radio.Button value="BAC_SI">Bác Sĩ ({doctorCount})</Radio.Button>
                 <Radio.Button value="LE_TAN">Lễ Tân ({receptionistCount})</Radio.Button>
                 <Radio.Button value="DUOC_SI">Dược Sĩ ({pharmacistCount})</Radio.Button>
-                <Radio.Button value="QUAN_TRI">Quản Trị</Radio.Button>
+                <Radio.Button value="QUAN_TRI">Quản Trị ({adminCount})</Radio.Button>
               </Radio.Group>
             </Space>
           </Col>
